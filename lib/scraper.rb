@@ -1,46 +1,45 @@
 require 'nokogiri'
 require 'open-uri'
-
-url = "https://flatironschool.com/"
-
-html = open(url)
-
-doc = Nokogiri::HTML(html)
+require_relative './course.rb'
 
 
+class Scraper
 
+  attr_accessor :url
 
+  def initialize(url = "http://learn-co-curriculum.github.io/site-for-scraping/courses")
+    @url = url
 
+  end
 
+  def get_page
+    Nokogiri::HTML(open(@url))
+  end
 
+  def get_courses
+    get_page.css("article.post")
+  end
 
+  def make_courses
+    courses_raw = get_courses
+    courses = courses_raw.map do |raw|
+      course = Course.new
+      course.title = raw.css("h2").text
+      course.description = raw.css("p").text
+      course.schedule = raw.css(".date").text
+      course
+    end
+  end
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-html = open("https://flatironschool.com/")
-
-Nokogiri::HTML(html)
-
-doc = Nokogiri::HTML(html)
-
-doc.css(".headline-26OIBN").text.strip 
-
-doc.css(".inlineMobileLeft-2Yo002.imageTextBlockGrid3-2XAK6G")
-
-courses = doc.css("#2a778efd-1685-5ec6-9e5a-0843d6a88b7b .inlineMobileLeft-2Yo002.imageTextBlockGrid3-2XAK6G")
-courses.each do |course|
-  puts course.text.strip
+  def print_courses
+    self.make_courses
+    Course.all.each do |course|
+    if course.title
+      puts "Title: #{course.title}"
+      puts "  Schedule: #{course.schedule}"
+      puts "  Description: #{course.description}"
+    end
+  end
 end
 
+end
